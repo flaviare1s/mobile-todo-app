@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
-import { TextDataButton } from './components/TextDataButton';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
 
 interface Todo {
   id: number;
@@ -9,8 +8,8 @@ interface Todo {
 }
 
 export default function App() {
+  const [todoText, setTodoText] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [todoText, setTodoText] = useState<string>('');
 
   const addTodo = (): void => {
     if (todoText.trim() !== '') {
@@ -25,144 +24,182 @@ export default function App() {
   };
 
   const toggleTodo = (id: number): void => {
-    setTodos(todos.map(todo => {
-      if (todo.id === id) {
-        return { ...todo, completed: !todo.completed };
-      }
-      return todo;
-    }));
+    setTodos(todos.map(todo => 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
   };
 
   const deleteTodo = (id: number): void => {
     setTodos(todos.filter(todo => todo.id !== id));
   };
 
-  const renderTodoItem = ({ item }: { item: Todo }) => (
-    <View style={styles.todoItem}>
-      <TouchableOpacity 
-        style={styles.todoContent}
-        onPress={() => toggleTodo(item.id)}
-      >
-        <View style={[styles.checkbox, item.completed && styles.checkboxCompleted]}>
-          {item.completed && <Text style={styles.checkmark}>✓</Text>}
-        </View>
-        <Text style={[styles.todoText, item.completed && styles.todoTextCompleted]}>
-          {item.text}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => deleteTodo(item.id)} style={styles.deleteButton}>
-        <Text style={styles.deleteButtonText}>🗑️</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const completedCount = todos.filter(t => t.completed).length;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.content}>
-        <Text style={styles.title}>📝 Lista de Tarefas</Text>
-        
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Adicionar nova tarefa..."
-            value={todoText}
-            onChangeText={setTodoText}
-            onSubmitEditing={addTodo}
-            returnKeyType="done"
-          />
-          <TextDataButton
-            text="Adicionar"
-            onPress={addTodo}
-            backgroundColor="#4CAF50"
-            disabled={todoText.trim() === ''}
-          />
-        </View>
-
-        <View style={styles.statsContainer}>
-          <Text style={styles.statsText}>
-            Total: {todos.length} | Concluídas: {todos.filter(t => t.completed).length}
-          </Text>
-        </View>
-
-        <FlatList
-          data={todos}
-          renderItem={renderTodoItem}
-          keyExtractor={item => item.id.toString()}
-          style={styles.list}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Nenhuma tarefa ainda</Text>
-              <Text style={styles.emptySubText}>Adicione uma tarefa acima para começar!</Text>
-            </View>
-          }
-        />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      
+      <View style={styles.header}>
+        <Text style={styles.title}>Lista de Tarefas</Text>
       </View>
-    </SafeAreaView>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          value={todoText}
+          onChangeText={setTodoText}
+          placeholder="Adicionar nova tarefa..."
+          placeholderTextColor="#999"
+        />
+        <TouchableOpacity style={styles.addButton} onPress={addTodo}>
+          <Text style={styles.addButtonText}>Adicionar</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.statsContainer}>
+        <Text style={styles.statsText}>Total: {todos.length}</Text>
+        <Text style={styles.statsSeparator}>|</Text>
+        <Text style={styles.statsText}>Concluídas: {completedCount}</Text>
+      </View>
+
+      <ScrollView style={styles.listContainer}>
+        {todos.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Nenhuma tarefa ainda</Text>
+            <Text style={styles.emptySubtext}>Adicione uma tarefa acima para começar</Text>
+          </View>
+        ) : (
+          todos.map(todo => (
+            <View key={todo.id} style={styles.todoItem}>
+              <TouchableOpacity 
+                style={styles.todoContent}
+                onPress={() => toggleTodo(todo.id)}
+              >
+                <View style={[
+                  styles.checkbox,
+                  todo.completed && styles.checkboxCompleted
+                ]}>
+                  {todo.completed && <View style={styles.checkmark} />}
+                </View>
+                <Text style={[
+                  styles.todoText,
+                  todo.completed && styles.todoTextCompleted
+                ]}>
+                  {todo.text}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.deleteButton}
+                onPress={() => deleteTodo(todo.id)}
+              >
+                <Text style={styles.deleteButtonText}>×</Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#f5f5f5',
   },
-  content: {
-    flex: 1,
-    padding: 20,
+  header: {
+    backgroundColor: '#2c3e50',
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
-    textAlign: 'center',
+    fontSize: 28,
+    fontWeight: '600',
+    color: '#fff',
+    letterSpacing: 0.5,
   },
   inputContainer: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 15,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   input: {
     flex: 1,
+    height: 48,
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: '#ddd',
     borderRadius: 8,
-    padding: 12,
+    paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#FFF',
+    backgroundColor: '#fafafa',
+  },
+  addButton: {
+    marginLeft: 12,
+    backgroundColor: '#2c3e50',
+    borderRadius: 8,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   statsContainer: {
-    backgroundColor: '#E3F2FD',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   statsText: {
     fontSize: 14,
-    color: '#1976D2',
-    textAlign: 'center',
-    fontWeight: '600',
+    color: '#666',
+    fontWeight: '500',
   },
-  list: {
+  statsSeparator: {
+    marginHorizontal: 16,
+    fontSize: 14,
+    color: '#ddd',
+  },
+  listContainer: {
     flex: 1,
   },
-  listContent: {
-    flexGrow: 1,
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: '#999',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#bbb',
   },
   todoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    padding: 15,
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginTop: 12,
     borderRadius: 8,
-    marginBottom: 10,
-    elevation: 2,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowRadius: 2,
+    elevation: 1,
   },
   todoContent: {
     flex: 1,
@@ -174,19 +211,20 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#007AFF',
+    borderColor: '#2c3e50',
     marginRight: 12,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   checkboxCompleted: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#2c3e50',
+    borderColor: '#2c3e50',
   },
   checkmark: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#fff',
   },
   todoText: {
     fontSize: 16,
@@ -194,29 +232,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   todoTextCompleted: {
-    textDecorationLine: 'line-through',
     color: '#999',
+    textDecorationLine: 'line-through',
   },
   deleteButton: {
-    padding: 8,
-  },
-  deleteButtonText: {
-    fontSize: 20,
-  },
-  emptyContainer: {
-    flex: 1,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#ff6b6b',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    marginLeft: 12,
   },
-  emptyText: {
-    fontSize: 20,
-    color: '#999',
-    fontWeight: '600',
-  },
-  emptySubText: {
-    fontSize: 14,
-    color: '#BBB',
-    marginTop: 8,
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '300',
+    lineHeight: 24,
   },
 });
