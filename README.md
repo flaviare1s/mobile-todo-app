@@ -39,19 +39,6 @@ npm install
 npx expo start
 ```
 
-### Método 2: Se houver problemas com certificados SSL
-
-```bash
-# Windows (PowerShell)
-$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx expo start
-
-# Windows (CMD)
-set NODE_TLS_REJECT_UNAUTHORIZED=0 && npx expo start
-
-# Linux/Mac
-NODE_TLS_REJECT_UNAUTHORIZED=0 npx expo start
-```
-
 Após iniciar o servidor de desenvolvimento:
 
 - Pressione `a` para abrir no emulador Android
@@ -92,14 +79,6 @@ O aplicativo apresenta:
 - Animações visuais ao marcar tarefas
 - Design responsivo e minimalista
 - Interface intuitiva e amigável
-
-## 📝 Licença
-
-Este projeto é de código aberto e está disponível sob a licença MIT.
-
-## 👤 Autor
-
-Desenvolvido como projeto de demonstração de React Native.
 
 ---
 
