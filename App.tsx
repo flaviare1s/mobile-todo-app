@@ -249,5 +249,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '300',
     lineHeight: 24,
+    paddingBottom: 5,
   },
 });
